@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2775.2">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="zh-CN"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;经典贪吃蛇&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>flex-direction: column;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>height: 100vh;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #1e1e2e;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #cdd6f4;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>#score-board {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 24px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>canvas {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #11111b;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border: 3px solid #89b4fa;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.controls-hint {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 15px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #a6adc8;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="score-board"&gt;得分: &lt;span id="score"&gt;0&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;canvas id="gameCanvas" width="400" height="400"&gt;&lt;/canvas&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="controls-hint"&gt;使用 &lt;b&gt;方向键 (↑ ↓ ← →)&lt;/b&gt; 或 &lt;b&gt;W A S D&lt;/b&gt; 控制移动 | 按 &lt;b&gt;空格键&lt;/b&gt; 重新开始&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const canvas = document.getElementById("gameCanvas");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const ctx = canvas.getContext("2d");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const scoreElement = document.getElementById("score");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const gridSize = 20; // 每个格子的像素大小</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const tileCount = canvas.width / gridSize; // 网格数量 (20x20)</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>let snake = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let food = {};</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let dx = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let dy = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let score = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let gameLoop = null;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let isGameOver = false;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let changingDirection = false; // 防止单帧内多次按键导致反向自杀</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 初始化游戏</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function initGame() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>snake = [</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{ x: 10, y: 10 },</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{ x: 9, y: 10 },</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{ x: 8, y: 10 }</p>
+<p class="p1"><span class="Apple-converted-space">            </span>];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>dx = 1; // 初始向右移动</p>
+<p class="p1"><span class="Apple-converted-space">            </span>dy = 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>score = 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>isGameOver = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>scoreElement.innerText = score;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>spawnFood();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (gameLoop) clearInterval(gameLoop);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gameLoop = setInterval(update, 100); // 100ms 刷新一帧</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 游戏主循环</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function update() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (isGameOver) return;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>changingDirection = false;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>moveSnake();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (checkCollision()) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>handleGameOver();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>draw();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 移动蛇的逻辑</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function moveSnake() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const head = { x: snake[0].x + dx, y: snake[0].y + dy };</p>
+<p class="p1"><span class="Apple-converted-space">            </span>snake.unshift(head); // 插入新头部</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 判断是否吃到食物</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (head.x === food.x &amp;&amp; head.y === food.y) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>score += 10;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>scoreElement.innerText = score;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>spawnFood();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>snake.pop(); // 没吃到则移除尾部</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 碰撞检测（撞墙或撞自己）</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function checkCollision() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const head = snake[0];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 撞墙</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (head.x &lt; 0 || head.x &gt;= tileCount || head.y &lt; 0 || head.y &gt;= tileCount) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return true;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 撞身体</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let i = 1; i &lt; snake.length; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (head.x === snake[i].x &amp;&amp; head.y === snake[i].y) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return true;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return false;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 随机生成食物（避开蛇身）</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function spawnFood() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>food = {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>x: Math.floor(Math.random() * tileCount),</p>
+<p class="p1"><span class="Apple-converted-space">                </span>y: Math.floor(Math.random() * tileCount)</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let part of snake) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (part.x === food.x &amp;&amp; part.y === food.y) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>spawnFood();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>break;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 渲染画面</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function draw() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 清空画布</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = "#11111b";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(0, 0, canvas.width, canvas.height);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 画食物</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = "#f38ba8";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.beginPath();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.arc(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2, gridSize / 2 - 2, 0, Math.PI * 2);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fill();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 画蛇</p>
+<p class="p1"><span class="Apple-converted-space">            </span>snake.forEach((part, index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = index === 0 ? "#a6e3a1" : "#94e2d5"; // 蛇头和蛇身不同颜色</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillRect(part.x * gridSize + 1, part.y * gridSize + 1, gridSize - 2, gridSize - 2);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 游戏结束处理</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function handleGameOver() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>isGameOver = true;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>clearInterval(gameLoop);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = "rgba(0, 0, 0, 0.7)";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(0, 0, canvas.width, canvas.height);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = "#f38ba8";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.font = "bold 36px sans-serif";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.textAlign = "center";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillText("游戏结束!", canvas.width / 2, canvas.height / 2 - 10);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = "#cdd6f4";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.font = "16px sans-serif";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillText("按空格键重新开始", canvas.width / 2, canvas.height / 2 + 25);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 键盘事件监听</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.addEventListener("keydown", (e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (e.code === "Space" &amp;&amp; isGameOver) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>initGame();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (changingDirection) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const key = e.key.toLowerCase();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const goingUp = dy === -1;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const goingDown = dy === 1;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const goingRight = dx === 1;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const goingLeft = dx === -1;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if ((key === "arrowleft" || key === "a") &amp;&amp; !goingRight) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>dx = -1; dy = 0; changingDirection = true;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} else if ((key === "arrowup" || key === "w") &amp;&amp; !goingDown) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>dx = 0; dy = -1; changingDirection = true;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} else if ((key === "arrowright" || key === "d") &amp;&amp; !goingLeft) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>dx = 1; dy = 0; changingDirection = true;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} else if ((key === "arrowdown" || key === "s") &amp;&amp; !goingUp) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>dx = 0; dy = 1; changingDirection = true;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 启动游戏</p>
+<p class="p1"><span class="Apple-converted-space">        </span>initGame();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
